@@ -11,6 +11,7 @@ import os
 import re
 import shutil
 import sys
+from pathlib import Path
 
 from . import camera, logger, utils
 from .components.streamer.streamer import Streamer, load_all_streamers
@@ -20,8 +21,14 @@ def log_initial() -> None:
     logger.log_quiet(
         "crowsnest - A webcam Service for multiple Cams and Stream Services."
     )
-    command = "git describe --always --tags"
-    version = utils.execute_shell_command(command)
+    version_file = Path(__file__).resolve().parent.parent / "SOURCE_VERSION"
+    if version_file.is_file():
+        version = version_file.read_text().strip()
+    elif shutil.which("git"):
+        version = utils.execute_shell_command("git describe --always --tags")
+    else:
+        version = ""
+    version = version or "unknown (source archive)"
     logger.log_quiet(f"Version: {version}")
     logger.log_quiet("Prepare Startup ...")
 
